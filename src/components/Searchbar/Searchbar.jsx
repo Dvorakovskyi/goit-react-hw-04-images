@@ -11,7 +11,6 @@ import {
 
 const Searchbar = ({ onSubmit }) => {
   const [request, setRequest] = useState('');
-  const [photos, setPhotos] = useState([]);
 
   const handlChangeForm = event => {
     const { value } = event.currentTarget;

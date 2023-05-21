@@ -40,7 +40,7 @@ export const App = () => {
       .finally(() => {
         setIsLoader(false);
       });
-  }, [request, page]);
+  }, [request, page, photos]);
 
   const handleSubmit = query => {
     if (query !== '') {
