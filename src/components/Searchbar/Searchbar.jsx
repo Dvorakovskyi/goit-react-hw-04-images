@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   StyledForm,
@@ -8,46 +9,42 @@ import {
   StyledHeader,
 } from './Searchbar.styled';
 
-class Searchbar extends React.Component {
-  state = {
-    request: '',
-    photos: [],
-  };
+const Searchbar = ({ onSubmit }) => {
+  const [request, setRequest] = useState('');
+  const [photos, setPhotos] = useState([]);
 
-  handlChangeForm = event => {
+  const handlChangeForm = event => {
     const { value } = event.currentTarget;
 
-    this.setState({ request: value });
+    setRequest(value);
   };
 
-  handlSubmitForm = event => {
+  const handlSubmitForm = event => {
     event.preventDefault();
 
-    this.props.onSubmit(this.state.request);
+    onSubmit(request);
 
-    this.setState({ request: '' });
+    setRequest('');
   };
 
-  render() {
-    return (
-      <StyledHeader>
-        <StyledForm onSubmit={this.handlSubmitForm}>
-          <StyledFormBtn type="submit">
-            <StyledSpan>Search</StyledSpan>
-          </StyledFormBtn>
-          <StyledInput
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            value={this.state.request}
-            onChange={this.handlChangeForm}
-          />
-        </StyledForm>
-      </StyledHeader>
-    );
-  }
-}
+  return (
+    <StyledHeader>
+      <StyledForm onSubmit={handlSubmitForm}>
+        <StyledFormBtn type="submit">
+          <StyledSpan>Search</StyledSpan>
+        </StyledFormBtn>
+        <StyledInput
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          value={request}
+          onChange={handlChangeForm}
+        />
+      </StyledForm>
+    </StyledHeader>
+  );
+};
 
 Searchbar.propTypes = {
   onSubmit: PropTypes.func.isRequired,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { fetchPhotos } from 'Api/Api';
 import Searchbar from './Searchbar/Searchbar';
@@ -8,97 +9,84 @@ import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 import { StyledApp } from './App.styled';
 
-export class App extends React.Component {
-  state = {
-    request: '',
-    photos: [],
-    page: 1,
-    isLoader: false,
-    error: null,
-    isShowModal: false,
-    largePhotos: null,
-  };
+export const App = () => {
+  const [request, setRequest] = useState('');
+  const [photos, setPhotos] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoader, setIsLoader] = useState(false);
+  const [error, setError] = useState(null);
+  const [isShowModal, setIsShowModal] = useState(false);
+  const [largePhotos, setLargePhotos] = useState(null);
 
-  componentDidUpdate(_, prevState) {
-    const { request, page } = this.state;
-
-    if (prevState.request !== request || prevState.page !== page) {
-      this.setState({ isLoader: true });
-
-      fetchPhotos(request, page)
-        .then(data => {
-          if (data.hits.length === 0) {
-            Notify.failure(
-              'Sorry, there are no images matching your search query. Please try again.'
-            );
-
-            return;
-          }
-          return this.setState(({ photos }) => {
-            return { photos: [...photos, ...data.hits] };
-          });
-        })
-        .catch(error => this.setState({ error: error.massage }))
-        .finally(() => {
-          this.setState({ isLoader: false });
-        });
+  useEffect(() => {
+    if (request === '') {
+      return;
     }
-  }
 
-  handleSubmit = request => {
-    if (request !== '') {
-      this.setState({ request });
+    setIsLoader(true);
+
+    fetchPhotos(request, page)
+      .then(data => {
+        if (data.hits.length === 0) {
+          Notify.failure(
+            'Sorry, there are no images matching your search query. Please try again.'
+          );
+
+          return;
+        }
+        return setPhotos([...photos, ...data.hits]);
+      })
+      .catch(error => setError(error.massage))
+      .finally(() => {
+        setIsLoader(false);
+      });
+  }, [request, page]);
+
+  const handleSubmit = query => {
+    if (query !== '') {
+      setRequest(query);
     } else {
       Notify.info('I`m waiting for your request');
     }
 
-    if (this.state.request !== request) {
-      this.setState({ photos: [] });
+    if (request !== query) {
+      setPhotos([]);
     }
   };
 
-  handleLoadMoreClick = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const handleLoadMoreClick = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  openModal = ({ largeImageURL, tags }) => {
-    this.setState({
-      isShowModal: true,
-      largePhotos: {
-        largeImageURL,
-        tags,
-      },
-    });
+  const openModal = ({ largeImageURL, tags }) => {
+    setIsShowModal(true);
+
+    const modalPhoto = {
+      largeImageURL,
+      tags,
+    };
+
+    setLargePhotos(modalPhoto);
   };
 
-  closeModal = () => {
-    this.setState({
-      isShowModal: false,
-      largePhotos: null,
-    });
+  const closeModal = () => {
+    setIsShowModal(false);
+
+    setLargePhotos(null);
   };
 
-  render() {
-    const { photos, isLoader, error, isShowModal, largePhotos } = this.state;
-
-    return (
-      <StyledApp>
-        {error &&
-          Notify.failure('Something went wrong, please try again later')}
-        <Searchbar onSubmit={this.handleSubmit} />
-        <ImageGallery data={this.state.photos} onClick={this.openModal} />
-        {photos.length > 0 && (
-          <LoadMoreBtn onClick={this.handleLoadMoreClick} />
-        )}
-        {isLoader && <Loader />}
-        {isShowModal && (
-          <Modal onClick={this.closeModal}>
-            <img src={largePhotos.largeImageURL} alt={largePhotos.tags} />
-          </Modal>
-        )}
-      </StyledApp>
-    );
-  }
-}
+  return (
+    <StyledApp>
+      {error && Notify.failure('Something went wrong, please try again later')}
+      <Searchbar onSubmit={handleSubmit} />
+      <ImageGallery data={photos} onClick={openModal} />
+      {photos.length > 0 && <LoadMoreBtn onClick={handleLoadMoreClick} />}
+      {isLoader && <Loader />}
+      {isShowModal && (
+        <Modal onClick={closeModal}>
+          <img src={largePhotos.largeImageURL} alt={largePhotos.tags} />
+        </Modal>
+      )}
+    </StyledApp>
+  );
+};
