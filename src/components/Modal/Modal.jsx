@@ -7,23 +7,22 @@ import { StyledOverlay, StyledModal } from './Modal.styled';
 const modalEl = document.querySelector('#modal-root');
 
 const Modal = ({ onClick, children }) => {
- 
   useEffect(() => {
+    const closeModal = event => {
+      if (event.code === 'Escape' || event.target === event.currentTarget) {
+        onClick();
+      }
+    };
+
     window.addEventListener('keydown', closeModal);
 
     return () => {
       window.removeEventListener('keydown', closeModal);
     };
-  }, []);
-
-    const closeModal = event => {
-    if (event.code === 'Escape' || event.target === event.currentTarget) {
-      onClick();
-    }
-  };
+  }, [onClick]);
 
   return createPortal(
-    <StyledOverlay onClick={closeModal}>
+    <StyledOverlay onClick={onClick}>
       <StyledModal>{children}</StyledModal>
     </StyledOverlay>,
     modalEl
