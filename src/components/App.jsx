@@ -34,13 +34,13 @@ export const App = () => {
 
           return;
         }
-        return setPhotos([...photos, ...data.hits]);
+        return setPhotos(prevPhotos => [...prevPhotos, ...data.hits]);
       })
       .catch(error => setError(error.massage))
       .finally(() => {
         setIsLoader(false);
       });
-  }, [request, page, photos]);
+  }, [request, page]);
 
   const handleSubmit = query => {
     if (query !== '') {
